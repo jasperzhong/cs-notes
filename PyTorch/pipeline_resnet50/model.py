@@ -27,8 +27,7 @@ class PipelineParallelResNet50(ResNet):
                     "The summation of `balance` does not match the number of layers"
             self.balance = balance
         else:
-            num_layers_per_stage = len(self.resnet50_sequential) // \
-                    get_pipeline_model_parallel_world_size()
+            num_layers_per_stage = len(self.resnet50_sequential) // \ get_pipeline_model_parallel_world_size()
             self.balance = [num_layers_per_stage] * get_pipeline_model_parallel_world_size()
             remaining = len(self.resnet50_sequential) - num_layers_per_stage * len(self.balance)
             self.balance[-1] += remaining
@@ -47,7 +46,7 @@ class PipelineParallelResNet50(ResNet):
         self._output_shape = self._output_shapes[end - 1]
         self.model_split = self.resnet50_sequential[start:end]
 
-    def _profile(self, shape=[3, 224, 224]):
+    def _profile(self, shape=[1, 28, 28]):
         """
         get each layer's input/output shape by running one forward pass
         """
@@ -62,6 +61,13 @@ class PipelineParallelResNet50(ResNet):
             output = layer(input)
             self._output_shapes.append(output.shape)
             input = output
+
+    def parameters(self, recursive=True):
+        params = []
+        for layer in self.model_split:
+            params.append(layer.parameters())
+
+        return params
 
     @property
     def input_shape(self):
