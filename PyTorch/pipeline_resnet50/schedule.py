@@ -28,9 +28,11 @@ def get_pipeline_model_parallel_prev_rank():
             get_pipeline_model_parallel_world_size()
 
 def get_num_microbatches():
+    global _GLOBAL_ARGS
     return _GLOBAL_ARGS.global_batch_size // _GLOBAL_ARGS.micro_batch_size
 
 def get_microbatch_size():
+    global _GLOBAL_ARGS
     return _GLOBAL_ARGS.micro_batch_size
 
 def forward_step(data_iterator, model, input_tensor, loss_func):
