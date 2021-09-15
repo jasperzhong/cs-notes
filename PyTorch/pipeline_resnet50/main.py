@@ -8,6 +8,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 from model import PipelineParallelResNet50
+from schedule import pipedream_flush_schedule, initialize_global_args
 
 parser = argparse.ArgumentParser(
     description='Pipeline Parallel ResNet50 Arguments')
@@ -56,6 +57,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
     loss_func = nn.CrossEntropyLoss()
 
+    initialize_global_args(args)
     train(data_iterator, model, optimizer, loss_func)
 
 
