@@ -16,7 +16,7 @@ class PipelineParallelResNet50(ResNet):
             self.layer3,
             self.layer4,
             self.avgpool,
-            nn.Flatten,
+            nn.Flatten(),
             self.fc
         )
 
