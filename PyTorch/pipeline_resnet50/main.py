@@ -28,6 +28,13 @@ def main():
         'nccl', world_size=args.world_size, rank=args.rank,
         timeout=timedelta(seconds=10)
     )
+    
+    x = torch.randn(10).cuda()
+    if args.rank == 0:
+        torch.distributed.send(x, 1)
+    else:
+        torch.distributed.recv(x, 0)
+    print(x)
 
 
 if __name__ == '__main__':
