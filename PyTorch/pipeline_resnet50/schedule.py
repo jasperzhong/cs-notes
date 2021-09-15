@@ -39,7 +39,7 @@ def forward_step(data_iterator, model, input_tensor, loss_func):
     if is_pipeline_first_stage() or is_pipeline_last_stage():
         data = next(data_iterator)
         images, labels = data
-        images, labesl = images.cuda(), labels.cuda()
+        images, labels = images.cuda(), labels.cuda()
 
     if is_pipeline_first_stage():
         assert input_tensor is None

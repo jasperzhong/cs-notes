@@ -16,8 +16,7 @@ parser.add_argument('--pipeline-model-parallel-size', type=int, default=1, help=
 parser.add_argument('--num-classes', type=int, default=1000,
                     help='num of classes in vision classification task')
 parser.add_argument('--micro-batch-size', type=int, default=None,
-                    help='Batch size per model instance (local batch size).')
-parser.add_argument('--global-batch-size', type=int,
+                    help='Batch size per model instance (local batch size).') parser.add_argument('--global-batch-size', type=int,
                     default=None, help='Training batch size.')
 
 def get_data_iterator(args):
@@ -40,6 +39,7 @@ def train(data_iterator, model, optimizer, loss_func):
 
 def main():
     args = parser.parse_args()
+    initialize_global_args(args)
 
     args.world_size = int(os.environ['WORLD_SIZE'])
     args.rank = int(os.environ['RANK'])
@@ -57,7 +57,6 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
     loss_func = nn.CrossEntropyLoss()
 
-    initialize_global_args(args)
     train(data_iterator, model, optimizer, loss_func)
 
 
