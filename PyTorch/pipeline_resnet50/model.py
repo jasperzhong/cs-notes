@@ -27,7 +27,8 @@ class PipelineParallelResNet50(ResNet):
                     "The summation of `balance` does not match the number of layers"
             self.balance = balance
         else:
-            num_layers_per_stage = len(self.resnet50_sequential) // \ get_pipeline_model_parallel_world_size()
+            num_layers_per_stage = len(self.resnet50_sequential) // \
+                    get_pipeline_model_parallel_world_size()
             self.balance = [num_layers_per_stage] * get_pipeline_model_parallel_world_size()
             remaining = len(self.resnet50_sequential) - num_layers_per_stage * len(self.balance)
             self.balance[-1] += remaining
