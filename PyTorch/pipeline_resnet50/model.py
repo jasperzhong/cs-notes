@@ -52,7 +52,7 @@ class PipelineParallelResNet50(ResNet):
         get each layer's input/output shape by running one forward pass
         """
         micro_batch_size = get_microbatch_size()
-        fake_input = torch.randn([micro_batch_size] + shape)
+        fake_input = torch.randn(tuple([micro_batch_size] + shape))
 
         self._input_shapes = []
         self._output_shapes = []
