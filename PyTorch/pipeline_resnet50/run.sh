@@ -10,4 +10,6 @@ python3 -m torch.distributed.run \
 	--rdzv_id=1234 --rdzv_backend=static \
 	--rdzv_endpoint=$MASTER_IP:$MASTER_PORT \
 	--node_rank 0 \
-	main.py
+	main.py \
+	--micro-batch-size 32 \
+	--global-batch-size 64 
