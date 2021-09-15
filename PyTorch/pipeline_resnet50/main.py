@@ -35,7 +35,7 @@ def train(data_iterator, model, optimizer, loss_func):
     optimizer.zero_grad()
     pipedream_flush_schedule(data_iterator, model, loss_func)
     optimizer.step()
-    
+
 
 def main():
     args = parser.parse_args()
@@ -43,7 +43,6 @@ def main():
     args.world_size = int(os.environ['WORLD_SIZE'])
     args.rank = int(os.environ['RANK'])
     args.local_rank = int(os.environ['LOCAL_RANK'])
-
     torch.cuda.set_device(args.local_rank)
     torch.distributed.init_process_group(
         'nccl', world_size=args.world_size, rank=args.rank,
@@ -51,15 +50,13 @@ def main():
     )
 
     data_iterator = get_data_iterator(args)
-    model = PipelineParallelResNet50(balance=[6, 5]) 
+    model = PipelineParallelResNet50(balance=[6, 5])
     model.cuda()
 
-    optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9) 
+    optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
     loss_func = nn.CrossEntropyLoss()
 
-    train(data
-    
-    
+    train(data_iterator, model, optimizer, loss_func)
 
 
 if __name__ == '__main__':
