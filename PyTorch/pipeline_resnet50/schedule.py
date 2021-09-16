@@ -172,4 +172,4 @@ def pipedream_flush_schedule(data_iterator, model, loss_func):
 
         send_backward(input_tensor_grad)
 
-    return loss
+    return loss.item()
