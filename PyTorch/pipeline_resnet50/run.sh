@@ -12,6 +12,6 @@ python3 -m torch.distributed.run \
 	--node_rank 0 \
 	main.py \
 	--micro-batch-size 64 \
-	--global-batch-size 128 \
+	--global-batch-size 256 \
 	--seed 2021 \
 	~/data/ILSVRC2012 

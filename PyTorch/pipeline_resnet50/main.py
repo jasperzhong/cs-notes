@@ -1,4 +1,5 @@
 import argparse
+import time
 import os
 import random
 from datetime import timedelta
@@ -19,7 +20,6 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=90, type=int, metavar='N',
                     help='number of total epochs to run')
-
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
@@ -30,7 +30,7 @@ parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
 parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--seed', default=None, type=int,
-                                       help='seed for initializing training. ')
+                    help='seed for initializing training. ')
 # Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
@@ -65,14 +65,16 @@ def train(args, data_iterator, model, optimizer, loss_func):
         iteration = 0
         while True:
             try:
+                start = time.time()
                 optimizer.zero_grad()
                 loss = pipedream_flush_schedule(data_iterator, model, loss_func)
                 optimizer.step()
+                elapsed = time.time() - start
 
                 iteration += 1
                 if is_pipeline_last_stage() and iteration % args.print_freq == 0:
-                    print("[Epoch {}/Iteration {}] loss: {}".format(
-                        epoch, iteration, loss
+                    print("[Epoch {}/Iteration {}] loss: {.2f} throughput: {} imgs/s".format(
+                        epoch, iteration, loss, args.global_batch_size / elapsed
                     ))
             except StopIteration:
                 break
