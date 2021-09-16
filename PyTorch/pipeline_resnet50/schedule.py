@@ -88,7 +88,7 @@ def recv_backward(shape, dtype=torch.float32):
         torch.distributed.recv(output_tensor_grad, get_pipeline_model_parallel_next_rank())
         return output_tensor_grad
 
-def send_forward_recv_backward(output_tensor):
+def send_forward_recv_backward(output_tensor, dtype=torch.float32):
     output_tensor_grad = None
     if not is_pipeline_last_stage():
         output_tensor_grad = torch.empty_like(output_tensor, requires_grad=True, device=torch.cuda.current_device(), dtype=dtype)
@@ -102,7 +102,7 @@ def send_forward_recv_backward(output_tensor):
 
     return output_tensor_grad
 
-def send_backward_recv_forward(input_tensor_grad):
+def send_backward_recv_forward(input_tensor_grad, dtype=torch.float32):
     input_tensor = None
     if not is_pipeline_first_stage():
         input_tensor = torch.empty_like(input_tensor_grad, requires_grad=True, device=torch.cuda.current_device(), dtype=dtype)
