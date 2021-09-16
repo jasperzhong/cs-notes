@@ -66,9 +66,10 @@ class PipelineParallelResNet50(ResNet):
     def parameters(self, recursive=True):
         params = []
         for layer in self.model_split:
-            params.append(layer.parameters())
+            params.append(list(layer.parameters()))
 
-        return params
+        for param in params:
+            yield param
 
     @property
     def input_shape(self):
