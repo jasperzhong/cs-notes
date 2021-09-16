@@ -25,6 +25,8 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
 parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
+parser.add_argument('-p', '--print-freq', default=10, type=int,
+                    metavar='N', help='print frequency (default: 10)')
 # Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
@@ -54,10 +56,22 @@ def get_data_iterator(args):
 
 
 
-def train(data_iterator, model, optimizer, loss_func):
-    optimizer.zero_grad()
-    pipedream_flush_schedule(data_iterator, model, loss_func)
-    optimizer.step()
+def train(args, data_iterator, model, optimizer, loss_func):
+    for epoch in range(args.epochs):
+        iteration = 0
+        while True:
+            try:
+                optimizer.zero_grad()
+                loss = pipedream_flush_schedule(data_iterator, model, loss_func)
+                optimizer.step()
+
+                iteration += 1
+                if iteration % args.print_freq == 0:
+                    print("[Epoch {}/Iteration {}] loss: {}".format(
+                        epoch, iteration, loss
+                    ))
+            except StopIteration:
+                break
 
 
 def main():
@@ -78,9 +92,9 @@ def main():
     model.cuda()
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
-    loss_func = nn.CrossEntropyLoss()
+    loss_func = nn.CrossEntropyLoss().cuda()
 
-    train(data_iterator, model, optimizer, loss_func)
+    train(args, data_iterator, model, optimizer, loss_func)
 
 
 if __name__ == '__main__':

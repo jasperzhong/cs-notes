@@ -35,7 +35,7 @@ def get_microbatch_size():
     global _GLOBAL_ARGS
     return _GLOBAL_ARGS.micro_batch_size
 
-def forward_step(data_iterator, model, input_tensor, loss_func):
+def forward_step(data_iterator, model, input_tensor, loss_func, loss):
     if is_pipeline_first_stage() or is_pipeline_last_stage():
         data = next(data_iterator)
         images, labels = data
@@ -48,7 +48,9 @@ def forward_step(data_iterator, model, input_tensor, loss_func):
     output_tensor = model(input_tensor)
 
     if is_pipeline_last_stage():
-        loss = loss_func(output_tensor, labels)
+        output_tensor = loss_func(output_tensor, labels)
+        output_tensor /= get_num_microbatches()
+        loss += output_tensor.item()
 
     return output_tensor
 
@@ -126,11 +128,12 @@ def pipedream_flush_schedule(data_iterator, model, loss_func):
 
     input_tensors = []
     output_tensors = []
+    loss = 0
 
     # run warmup forward passes
     for _ in range(num_warmup_microbatches):
         input_tensor = recv_forward(model.input_shape)
-        output_tensor = forward_step(data_iterator, model, input_tensor, loss_func)
+        output_tensor = forward_step(data_iterator, model, input_tensor, loss_func, loss)
         send_forward(output_tensor)
 
         input_tensors.append(input_tensor)
@@ -142,7 +145,7 @@ def pipedream_flush_schedule(data_iterator, model, loss_func):
     # run 1F1B steady state
     for i in range(num_microbatches_remaining):
         last_iteration = (i == (num_microbatches_remaining - 1))
-        output_tensor = forward_step(data_iterator, model, input_tensor, loss_func)
+        output_tensor = forward_step(data_iterator, model, input_tensor, loss_func, loss)
         output_tensor_grad = send_forward_recv_backward(output_tensor)
 
         input_tensors.append(input_tensor)
@@ -168,3 +171,5 @@ def pipedream_flush_schedule(data_iterator, model, loss_func):
         input_tensor_grad = backward_step(input_tensor, output_tensor, output_tensor_grad)
 
         send_backward(input_tensor_grad)
+
+    return loss
