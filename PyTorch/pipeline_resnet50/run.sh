@@ -13,4 +13,4 @@ python3 -m torch.distributed.run \
 	main.py \
 	--micro-batch-size 128 \
 	--global-batch-size 256 \
-	data ~/data/ILSVRC2012 
+	~/data/ILSVRC2012 
