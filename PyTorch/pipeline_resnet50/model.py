@@ -57,11 +57,12 @@ class PipelineParallelResNet50(ResNet):
         self._input_shapes = []
         self._output_shapes = []
         input = fake_input
-        for layer in self.resnet50_sequential:
-            self._input_shapes.append(input.shape)
-            output = layer(input)
-            self._output_shapes.append(output.shape)
-            input = output
+        with torch.no_grad():
+            for layer in self.resnet50_sequential:
+                self._input_shapes.append(input.shape)
+                output = layer(input)
+                self._output_shapes.append(output.shape)
+                input = output
 
     def parameters(self, recursive=True):
         params = []
