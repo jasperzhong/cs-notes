@@ -73,7 +73,7 @@ def train(args, data_iterator, model, optimizer, loss_func):
 
                 iteration += 1
                 if is_pipeline_last_stage() and iteration % args.print_freq == 0:
-                    print("[Epoch {}/Iteration {}] loss: {.2f} throughput: {} imgs/s".format(
+                    print("[Epoch {}/Iteration {}] loss: {:.2f} throughput: {:.0f} imgs/s".format(
                         epoch, iteration, loss, args.global_batch_size / elapsed
                     ))
             except StopIteration:
