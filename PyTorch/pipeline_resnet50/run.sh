@@ -11,6 +11,6 @@ python3 -m torch.distributed.run \
 	--rdzv_endpoint=$MASTER_IP:$MASTER_PORT \
 	--node_rank 0 \
 	main.py \
-	data ~/data/ILSVRC2012 \
 	--micro-batch-size 128 \
-	--global-batch-size 256
+	--global-batch-size 256 \
+	data ~/data/ILSVRC2012 
