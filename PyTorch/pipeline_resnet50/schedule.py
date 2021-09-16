@@ -39,6 +39,7 @@ def forward_step(data_iterator, model, input_tensor, loss_func, loss):
     if is_pipeline_first_stage() or is_pipeline_last_stage():
         data = next(data_iterator)
         images, labels = data
+        print(labels)
         images, labels = images.cuda(), labels.cuda()
 
     if is_pipeline_first_stage():
@@ -128,7 +129,7 @@ def pipedream_flush_schedule(data_iterator, model, loss_func):
 
     input_tensors = []
     output_tensors = []
-    loss = torch.tensor(0)
+    loss = torch.tensor(0.0)
 
     # run warmup forward passes
     for _ in range(num_warmup_microbatches):
