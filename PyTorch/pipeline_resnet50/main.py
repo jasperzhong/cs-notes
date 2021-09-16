@@ -1,9 +1,11 @@
 import argparse
-import time
 import os
 import random
+import sys
+import time
 from datetime import timedelta
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -31,6 +33,8 @@ parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
+parser.add_argument('--benchmark-iters', default=100, type=int, metavar='N',
+                    help='number of total iterations to run for benchmark')
 # Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
@@ -63,6 +67,7 @@ def get_data_iterator(args):
 def train(args, data_iterator, model, optimizer, loss_func):
     for epoch in range(args.epochs):
         iteration = 0
+        throughputs = []
         while True:
             try:
                 start = time.time()
@@ -73,9 +78,18 @@ def train(args, data_iterator, model, optimizer, loss_func):
 
                 iteration += 1
                 if is_pipeline_last_stage() and iteration % args.print_freq == 0:
+                    throughput = args.global_batch_size / elapsed
                     print("[Epoch {}/Iteration {}] loss: {:.2f} throughput: {:.0f} imgs/s".format(
-                        epoch, iteration, loss, args.global_batch_size / elapsed
+                        epoch, iteration, loss, throughput
                     ))
+                    throughputs.append(throughput)
+
+                if iteration == args.benchmark_iters:
+                    throughputs = np.array(throughputs)
+                    print("Avg Throughput per 10 iterations: {:.2f} imgs/s, std: {:.2f} imgs/s".format(
+                        np.mean(throughputs), np.std(throughputs)
+                    ))
+                    sys.exit()
             except StopIteration:
                 break
 
@@ -86,6 +100,7 @@ def main():
 
     if args.seed is not None:
         random.seed(args.seed)
+        np.random.seed(args.seed)
         torch.manual_seed(args.seed)
 
     torch.backends.cudnn.benchmark = True
