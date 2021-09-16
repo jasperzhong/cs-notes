@@ -12,25 +12,48 @@ from schedule import pipedream_flush_schedule, initialize_global_args
 
 parser = argparse.ArgumentParser(
     description='Pipeline Parallel ResNet50 Arguments')
-parser.add_argument('--pipeline-model-parallel-size', type=int, default=1, help='Degree of pipeline model parallelism')
-parser.add_argument('--num-classes', type=int, default=1000,
-                    help='num of classes in vision classification task')
+parser.add_argument('data', metavar='DIR', help='path to dataset')
+parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+                    help='number of data loading workers (default: 4)')
+parser.add_argument('--epochs', default=90, type=int, metavar='N',
+                    help='number of total epochs to run')
+
+parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
+                    metavar='LR', help='initial learning rate', dest='lr')
+parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
+                    help='momentum')
+parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
+                    metavar='W', help='weight decay (default: 1e-4)',
+                    dest='weight_decay')
+# Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
 parser.add_argument('--global-batch-size', type=int,
-                    default=None, help='Training batch size.')
+                    default=256, help='Training batch size.')
 
 def get_data_iterator(args):
-    transform=transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    dataset = datasets.MNIST('../data', train=True, download=True, transform=transform)
-    train_kwargs = {'batch_size': args.micro_batch_size, 'num_workers': 1,
-                    'pin_memory': True, 'shuffle': True}
-    train_loader = torch.utils.data.DataLoader(dataset, **train_kwargs)
+    traindir = os.path.join(args.data, 'train')
+    valdir = os.path.join(args.data, 'val')
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+
+    train_dataset = datasets.ImageFolder(
+        traindir,
+        transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            normalize,
+        ]))
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=args.micro_batch_size, shuffle=True,
+        num_workers=args.workers, pin_memory=True
+    )
     data_iterator = iter(train_loader)
     return data_iterator
+
+
 
 def train(data_iterator, model, optimizer, loss_func):
     optimizer.zero_grad()
