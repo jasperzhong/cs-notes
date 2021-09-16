@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 from datetime import timedelta
 
 import torch
@@ -8,8 +9,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 from model import PipelineParallelResNet50
-from schedule import pipedream_flush_schedule, initialize_global_args, \
-        is_pipeline_last_stage
+from schedule import (initialize_global_args, is_pipeline_last_stage,
+                      pipedream_flush_schedule)
 
 parser = argparse.ArgumentParser(
     description='Pipeline Parallel ResNet50 Arguments')
@@ -28,6 +29,8 @@ parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     dest='weight_decay')
 parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
+parser.add_argument('--seed', default=None, type=int,
+                                       help='seed for initializing training. ')
 # Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
@@ -78,6 +81,12 @@ def train(args, data_iterator, model, optimizer, loss_func):
 def main():
     args = parser.parse_args()
     initialize_global_args(args)
+
+    if args.seed is not None:
+        random.seed(args.seed)
+        torch.manual_seed(args.seed)
+
+    torch.backends.cudnn.benchmark = True
 
     args.world_size = int(os.environ['WORLD_SIZE'])
     args.rank = int(os.environ['RANK'])
