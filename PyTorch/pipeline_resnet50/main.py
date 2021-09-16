@@ -8,7 +8,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 from model import PipelineParallelResNet50
-from schedule import pipedream_flush_schedule, initialize_global_args
+from schedule import pipedream_flush_schedule, initialize_global_args, \
+        is_pipeline_last_stage
 
 parser = argparse.ArgumentParser(
     description='Pipeline Parallel ResNet50 Arguments')
@@ -66,7 +67,7 @@ def train(args, data_iterator, model, optimizer, loss_func):
                 optimizer.step()
 
                 iteration += 1
-                if iteration % args.print_freq == 0:
+                if is_pipeline_last_stage() and iteration % args.print_freq == 0:
                     print("[Epoch {}/Iteration {}] loss: {}".format(
                         epoch, iteration, loss
                     ))
