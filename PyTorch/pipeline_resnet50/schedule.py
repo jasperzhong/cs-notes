@@ -49,6 +49,7 @@ def forward_step(data_iterator, model, input_tensor, loss_func, loss):
 
     if is_pipeline_last_stage():
         output_tensor = loss_func(output_tensor, labels)
+        print(output_tensor)
         output_tensor /= get_num_microbatches()
         loss += output_tensor.item()
 
