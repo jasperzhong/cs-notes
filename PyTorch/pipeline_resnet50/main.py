@@ -35,11 +35,16 @@ parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
 parser.add_argument('--benchmark-iters', default=100, type=int, metavar='N',
                     help='number of total iterations to run for benchmark')
+parser.add_argument('--master_ip', default=None, type=str,
+                    help='master ip for c10d')
+parser.add_argument('--master_port', default=None, type=int,
+                    help='master port for c10d')
 # Pipeline parallelism
 parser.add_argument('--micro-batch-size', type=int, default=None,
                     help='Batch size per model instance (local batch size).')
 parser.add_argument('--global-batch-size', type=int,
                     default=256, help='Training batch size.')
+
 
 def get_data_iterator(args):
     traindir = os.path.join(args.data, 'train')
@@ -63,7 +68,6 @@ def get_data_iterator(args):
     return data_iterator
 
 
-
 def train(args, data_iterator, model, optimizer, loss_func):
     for epoch in range(args.epochs):
         iteration = 0
@@ -72,7 +76,8 @@ def train(args, data_iterator, model, optimizer, loss_func):
             try:
                 start = time.time()
                 optimizer.zero_grad()
-                loss = pipedream_flush_schedule(data_iterator, model, loss_func)
+                loss = pipedream_flush_schedule(
+                    data_iterator, model, loss_func)
                 optimizer.step()
                 elapsed = time.time() - start
 
@@ -109,8 +114,10 @@ def main():
     args.rank = int(os.environ['RANK'])
     args.local_rank = int(os.environ['LOCAL_RANK'])
     torch.cuda.set_device(args.local_rank)
+    init_method = "tcp://{}:{}".format(args.master_ip, args.master_port)
     torch.distributed.init_process_group(
-        'nccl', world_size=args.world_size, rank=args.rank,
+        'nccl', init_method=init_method,
+        world_size=args.world_size, rank=args.rank,
         timeout=timedelta(seconds=10)
     )
 
