@@ -14,4 +14,3 @@ python3 -m torch.distributed.run \
 	main.py \
 	--master_ip $MASTER_IP \
 	--master_port $MASTER_PORT \
-	~/data/ILSVRC2012
