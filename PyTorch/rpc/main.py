@@ -15,20 +15,13 @@ def main():
     )
 
     name = "worker{}".format(rank)
-    print(name)
-    rpc.init_rpc(name, rank=rank, world_size=world_size)
-    torch.distributed.barrier()
-
-    my_count = rank
-
-    def my_add():
-        my_count += 1
-
-    if rank == 0:
-        rpc.rpc_sync("worker1", my_add)
+    rpc.init_rpc(name, rank=rank, world_size=world_size,
+                 rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
+                     init_method="tcp://localhost:29401"
+                 ))
 
     torch.distributed.barrier()
-    print(my_count)
+
 
 
 if __name__ == "__main__":
