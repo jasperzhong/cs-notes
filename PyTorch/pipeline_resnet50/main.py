@@ -1,28 +1,20 @@
-import argparse
 import os
 from datetime import timedelta
 
 import torch
 
-parser = argparse.ArgumentParser(
-    description='minimal code to reproduce the bug')
-parser.add_argument('--master_ip', default=None, type=str,
-                    help='master ip for c10d')
-parser.add_argument('--master_port', default=None, type=int,
-                    help='master port for c10d')
-
 
 def main():
-    args = parser.parse_args()
-
-    args.world_size = int(os.environ['WORLD_SIZE'])
-    args.rank = int(os.environ['RANK'])
-    args.local_rank = int(os.environ['LOCAL_RANK'])
-    torch.cuda.set_device(args.local_rank)
-    init_method = "tcp://{}:{}".format(args.master_ip, args.master_port)
+    world_size = int(os.environ['WORLD_SIZE'])
+    rank = int(os.environ['RANK'])
+    local_rank = int(os.environ['LOCAL_RANK'])
+    torch.cuda.set_device(local_rank)
+    master_addr = os.environ['MASTER_ADDR']
+    master_port = int(os.environ['MASTER_PORT'])
+    init_method = "tcp://{}:{}".format(master_addr, master_port)
     torch.distributed.init_process_group(
         'nccl', init_method=init_method,
-        world_size=args.world_size, rank=args.rank,
+        world_size=world_size, rank=rank,
         timeout=timedelta(seconds=10)
     )
 
