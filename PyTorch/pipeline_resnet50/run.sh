@@ -8,4 +8,5 @@ python3 -m torch.distributed.run \
 	--nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE \
 	--rdzv_id=1234 --rdzv_backend=c10d \
 	--rdzv_endpoint=$MASTER_IP \
-	main.py
+	main.py \
+	--master_ip=$MASTER_IP
