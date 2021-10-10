@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 from datetime import timedelta
 
 import torch
@@ -23,6 +24,7 @@ def main():
         timeout=timedelta(seconds=10)
     )
 
+    time.sleep(10)
     x = torch.randn((1000)).cuda()
 
     if torch.distributed.get_rank() == 0:
