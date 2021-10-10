@@ -24,8 +24,8 @@ def main():
         timeout=timedelta(seconds=10)
     )
 
-    time.sleep(10)
     x = torch.randn((1000)).cuda()
+    time.sleep(10)
 
     if torch.distributed.get_rank() == 0:
         torch.distributed.send(x, 1)
