@@ -11,4 +11,4 @@ cmd="python3 -m torch.distributed.run \
 	main.py \
 	--master_ip=$MASTER_IP"
 
-exec $cmd 
+LOGLEVEL=DEBUG exec $cmd 
