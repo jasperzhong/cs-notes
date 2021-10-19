@@ -25,14 +25,17 @@ def main():
     )
 
     x = torch.randn((1000)).cuda()
-    time.sleep(10)
 
-    if torch.distributed.get_rank() == 0:
-        torch.distributed.send(x, 1)
-    elif torch.distributed.get_rank() == 1:
-        torch.distributed.recv(x, 0)
-
-    print(x)
+    i = 0
+    while True:
+        src_rank = i 
+        dst_rank = (i + 1) % world_size
+        if torch.distributed.get_rank() == src_rank:
+            torch.distributed.send(x, dst_rank)
+        elif torch.distributed.get_rank() == dst_rank:
+            torch.distributed.recv(x, src_rank)
+        print(i)
+        i += 1
 
 
 if __name__ == '__main__':
