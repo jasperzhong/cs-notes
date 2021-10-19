@@ -28,7 +28,7 @@ def main():
 
     i = 0
     while True:
-        src_rank = i 
+        src_rank = i % world_size 
         dst_rank = (i + 1) % world_size
         if torch.distributed.get_rank() == src_rank:
             torch.distributed.send(x, dst_rank)
