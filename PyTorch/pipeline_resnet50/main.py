@@ -26,15 +26,16 @@ def main():
 
     x = torch.randn((1000)).cuda()
 
-    i = 0
+    i = 0  # iteration
+    # state(iteration=0)
     while True:
-        src_rank = i % world_size 
+        src_rank = i % world_size
         dst_rank = (i + 1) % world_size
         if torch.distributed.get_rank() == src_rank:
             torch.distributed.send(x, dst_rank)
         elif torch.distributed.get_rank() == dst_rank:
             torch.distributed.recv(x, src_rank)
-        print(i)
+        # print(i)
         i += 1
 
 
