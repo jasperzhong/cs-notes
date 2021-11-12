@@ -1,10 +1,15 @@
 #include "cuda_runtime.h"
 #include "nccl.h"
+#include <chrono>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <mpich/mpi.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <mutex>
+#include <thread>
 #include <unistd.h>
+
+std::mutex m;
 
 #define MPICHECK(cmd)                                \
     do {                                             \
@@ -57,6 +62,27 @@ static void getHostName(char* hostname, int maxlen)
     }
 }
 
+void checkNCCLError(ncclComm_t comm)
+{
+    while (true) {
+	{
+	    std::lock_guard<std::mutex> lock(m);
+	    ncclResult_t result;
+	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
+
+	    if (result != ncclSuccess) {
+		printf("[DEBUG] ncclComAbort starts!");
+		auto start = std::chrono::steady_clock::now();
+		NCCLCHECK(ncclCommAbort(comm));
+		auto end = std::chrono::steady_clock::now();
+		double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms", time_elapsed);
+	    }
+	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int size = 32 * 1024 * 1024;
@@ -100,9 +126,17 @@ int main(int argc, char* argv[])
     //initializing NCCL
     NCCLCHECK(ncclCommInitRank(&comm, nRanks, id, myRank));
 
+    std::thread background_watchdog_thread(checkNCCLError, comm);
+
     //communicating using NCCL
-    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
-	comm, s));
+    while (true) {
+	{
+	    std::lock_guard<std::mutex> lock(m);
+	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
+		comm, s));
+	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
     //completing NCCL operation by synchronizing on the CUDA stream
     CUDACHECK(cudaStreamSynchronize(s));
