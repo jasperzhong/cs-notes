@@ -1,12 +1,4 @@
-flags = [
-    "-Wall",
-    "-Wextra",
-    "-Werror"
-    "-I", "/usr/local/cuda/include",
-]
-
-
-def FlagsForFile(filename):
+def Settings(**kwargs):
     return {
-        "flags": flags
+        "flags": ['-x', 'c++', '-Wall', '-Wextra', '-Werror', '-I/usr/local/cuda/include']
     }
