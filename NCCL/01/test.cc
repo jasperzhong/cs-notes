@@ -70,6 +70,7 @@ void checkNCCLError(ncclComm_t comm)
 	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
+	    printf(ncclGetErrorString(result));
 
 	    if (result != ncclSuccess) {
 		printf("[DEBUG] ncclComAbort starts!");
@@ -144,6 +145,7 @@ int main(int argc, char* argv[])
     while (true) {
 	{
 	    std::lock_guard<std::mutex> lock(m);
+	    printf("launch allreduce");
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
 	}
@@ -159,6 +161,8 @@ int main(int argc, char* argv[])
 
     //finalizing NCCL
     ncclCommDestroy(comm);
+
+    background_watchdog_thread.join();
 
     printf("[Rank %d] Success \n", myRank);
     return 0;
