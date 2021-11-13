@@ -116,9 +116,6 @@ int main(int argc, char* argv[])
 	    localRank++;
     }
 
-    //finalizing MPI
-    MPICHECK(MPI_Finalize());
-
     ncclUniqueId id;
     ncclComm_t comm;
     float *sendbuff, *recvbuff;
@@ -128,6 +125,9 @@ int main(int argc, char* argv[])
     if (myRank == 0)
 	ncclGetUniqueId(&id);
     MPICHECK(MPI_Bcast((void*)&id, sizeof(id), MPI_BYTE, 0, MPI_COMM_WORLD));
+
+    //finalizing MPI
+    MPICHECK(MPI_Finalize());
 
     //picking a GPU based on localRank, allocate device buffers
     CUDACHECK(cudaSetDevice(localRank));
