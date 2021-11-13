@@ -70,15 +70,15 @@ void checkNCCLError(ncclComm_t comm)
 	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
-	    printf(ncclGetErrorString(result));
+	    printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
 
 	    if (result != ncclSuccess) {
-		printf("[DEBUG] ncclComAbort starts!");
+		printf("[DEBUG] ncclComAbort starts!\n");
 		auto start = std::chrono::steady_clock::now();
 		NCCLCHECK(ncclCommAbort(comm));
 		auto end = std::chrono::steady_clock::now();
 		double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms", time_elapsed);
+		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
 	    }
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
     while (true) {
 	{
 	    std::lock_guard<std::mutex> lock(m);
-	    printf("launch allreduce");
+	    printf("launch allreduce\n");
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
 	}
