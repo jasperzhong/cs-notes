@@ -70,9 +70,8 @@ void checkNCCLError(ncclComm_t comm)
 	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
-	    printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
-
 	    if (result != ncclSuccess) {
+	        printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
 		printf("[DEBUG] ncclComAbort starts!\n");
 		auto start = std::chrono::steady_clock::now();
 		NCCLCHECK(ncclCommAbort(comm));
@@ -145,7 +144,6 @@ int main(int argc, char* argv[])
     while (true) {
 	{
 	    std::lock_guard<std::mutex> lock(m);
-	    printf("launch allreduce\n");
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
 	}
