@@ -8,6 +8,7 @@
 #include <mutex>
 #include <thread>
 #include <unistd.h>
+#include <signal.h>
 
 std::mutex m;
 
@@ -83,11 +84,19 @@ void checkNCCLError(ncclComm_t comm)
     }
 }
 
+void handler(int signum) {
+	printf("receive signal %d. exit.", signum);
+	// use 0 to keep MPI from aborting the job
+	exit(0);
+}
+
 int main(int argc, char* argv[])
 {
     int size = 32 * 1024 * 1024;
 
     int myRank, nRanks, localRank = 0;
+    
+    signal(SIGTERM, handler);
 
     //initializing MPI
     MPICHECK(MPI_Init(&argc, &argv));
@@ -106,6 +115,9 @@ int main(int argc, char* argv[])
 	if (hostHashs[p] == hostHashs[myRank])
 	    localRank++;
     }
+
+    //finalizing MPI
+    MPICHECK(MPI_Finalize());
 
     ncclUniqueId id;
     ncclComm_t comm;
@@ -148,9 +160,6 @@ int main(int argc, char* argv[])
     //finalizing NCCL
     ncclCommDestroy(comm);
 
-    //finalizing MPI
-    MPICHECK(MPI_Finalize());
-
-    printf("[MPI Rank %d] Success \n", myRank);
+    printf("[Rank %d] Success \n", myRank);
     return 0;
 }
