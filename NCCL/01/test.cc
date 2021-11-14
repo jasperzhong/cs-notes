@@ -67,6 +67,7 @@ void checkNCCLError(ncclComm_t& comm)
 {
     while (true) {
 	{
+	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
 	    if (result != ncclSuccess) {
@@ -79,6 +80,7 @@ void checkNCCLError(ncclComm_t& comm)
 		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
 	    }
 	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
@@ -144,15 +146,16 @@ int main(int argc, char* argv[])
     //communicating using NCCL
     while (true) {
 	{
+	    std::lock_guard<std::mutex> lock(m);
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
-	    cnt++;
-	    if (cnt == sync_threshold) {
-		//completing NCCL operation by synchronizing on the CUDA stream
-		CUDACHECK(cudaStreamSynchronize(s));
-		cnt = 0;
-		printf("sync done\n");
-	    }
+	}
+	cnt++;
+	if (cnt == sync_threshold) {
+	    //completing NCCL operation by synchronizing on the CUDA stream
+	    CUDACHECK(cudaStreamSynchronize(s));
+	    cnt = 0;
+	    printf("sync done\n");
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
