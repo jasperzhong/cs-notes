@@ -1,4 +1,5 @@
 #!/bin/bash
+# `make` before running on both machines
 # run this script on net-g1
 
 export LD_LIBRARY_PATH=$LD_LDBRARY_PATH:/usr/local/cuda/lib 
