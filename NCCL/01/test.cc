@@ -6,9 +6,9 @@
 #include <cstdlib>
 #include <mpich/mpi.h>
 #include <mutex>
+#include <signal.h>
 #include <thread>
 #include <unistd.h>
-#include <signal.h>
 
 std::mutex m;
 
@@ -67,11 +67,10 @@ void checkNCCLError(ncclComm_t comm)
 {
     while (true) {
 	{
-	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
 	    if (result != ncclSuccess) {
-	        printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
+		printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
 		printf("[DEBUG] ncclComAbort starts!\n");
 		auto start = std::chrono::steady_clock::now();
 		NCCLCHECK(ncclCommAbort(comm));
@@ -80,22 +79,23 @@ void checkNCCLError(ncclComm_t comm)
 		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
 	    }
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
-void handler(int signum) {
-	printf("receive signal %d. exit.", signum);
-	// use 0 to keep MPI from aborting the job
-	exit(0);
+void handler(int signum)
+{
+    printf("receive signal %d. exit.", signum);
+    // use 0 to keep MPI from aborting the job
+    exit(0);
 }
 
 int main(int argc, char* argv[])
 {
     int size = 32 * 1024 * 1024;
+    int sync_threshold = 100;
 
     int myRank, nRanks, localRank = 0;
-    
+
     signal(SIGTERM, handler);
 
     //initializing MPI
@@ -140,18 +140,22 @@ int main(int argc, char* argv[])
 
     std::thread background_watchdog_thread(checkNCCLError, comm);
 
+    int cnt = 0;
     //communicating using NCCL
     while (true) {
 	{
-	    std::lock_guard<std::mutex> lock(m);
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
+	    cnt++;
+	    if (cnt == sync_threshold) {
+		//completing NCCL operation by synchronizing on the CUDA stream
+		CUDACHECK(cudaStreamSynchronize(s));
+		cnt = 0;
+		printf("sync done\n");
+	    }
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-
-    //completing NCCL operation by synchronizing on the CUDA stream
-    CUDACHECK(cudaStreamSynchronize(s));
 
     //free device buffers
     CUDACHECK(cudaFree(sendbuff));
