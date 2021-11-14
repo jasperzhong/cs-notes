@@ -63,7 +63,7 @@ static void getHostName(char* hostname, int maxlen)
     }
 }
 
-void checkNCCLError(ncclComm_t comm)
+void checkNCCLError(ncclComm_t& comm)
 {
     while (true) {
 	{
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
     //initializing NCCL
     NCCLCHECK(ncclCommInitRank(&comm, nRanks, id, myRank));
 
-    std::thread background_watchdog_thread(checkNCCLError, comm);
+    std::thread background_watchdog_thread(checkNCCLError, std::ref(comm));
 
     int cnt = 0;
     //communicating using NCCL
