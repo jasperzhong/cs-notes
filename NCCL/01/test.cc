@@ -5,9 +5,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <mpich/mpi.h>
+#include <mutex>
 #include <signal.h>
 #include <thread>
 #include <unistd.h>
+
+std::mutex m;
 
 #define MPICHECK(cmd)                                \
     do {                                             \
@@ -39,18 +42,6 @@
 	}                                                   \
     } while (0)
 
-struct AutoNcclGroup {
-    AutoNcclGroup()
-    {
-	NCCLCHECK(ncclGroupStart());
-    }
-
-    ~AutoNcclGroup() noexcept(false)
-    {
-	NCCLCHECK(ncclGroupEnd());
-    }
-};
-
 static uint64_t getHostHash(const char* string)
 {
     // Based on DJB2a, result = result * 33 ^ char
@@ -76,6 +67,7 @@ void checkNCCLError(ncclComm_t& comm)
 {
     while (true) {
 	{
+	    std::lock_guard<std::mutex> lock(m);
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
 	    if (result != ncclSuccess) {
@@ -152,7 +144,7 @@ int main(int argc, char* argv[])
     //communicating using NCCL
     while (true) {
 	{
-	    AutoNcclGroup nccl_group_guard;
+	    std::lock_guard<std::mutex> lock(m);
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
 	}
