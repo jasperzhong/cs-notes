@@ -10,8 +10,6 @@
 #include <thread>
 #include <unistd.h>
 
-std::mutex m;
-
 #define MPICHECK(cmd)                                \
     do {                                             \
 	int e = cmd;                                 \
@@ -42,6 +40,46 @@ std::mutex m;
 	}                                                   \
     } while (0)
 
+// RAII wrapper for NCCL communicator
+class NCCLComm {
+public:
+    explicit NCCLComm(ncclComm_t nccl_comm)
+	: nccl_comm_(nccl_comm){};
+
+    ~NCCLComm()
+    {
+	//finalizing NCCL
+	ncclCommDestroy(nccl_comm_);
+    }
+
+    ncclComm_t GetNCCLComm() const
+    {
+	std::lock_guard<std::mutex> lock(mutex_);
+	return nccl_comm_;
+    }
+
+    void CheckNCCLError()
+    {
+
+	std::lock_guard<std::mutex> lock(mutex_);
+	ncclResult_t result;
+	NCCLCHECK(ncclCommGetAsyncError(nccl_comm_, &result));
+	if (result != ncclSuccess) {
+	    printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
+	    printf("[DEBUG] ncclComAbort starts!\n");
+	    auto start = std::chrono::steady_clock::now();
+	    NCCLCHECK(ncclCommAbort(nccl_comm_));
+	    auto end = std::chrono::steady_clock::now();
+	    double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	    printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
+	}
+    }
+
+private:
+    ncclComm_t nccl_comm_;
+    mutable std::mutex mutex_;
+};
+
 static uint64_t getHostHash(const char* string)
 {
     // Based on DJB2a, result = result * 33 ^ char
@@ -63,23 +101,10 @@ static void getHostName(char* hostname, int maxlen)
     }
 }
 
-void checkNCCLError(ncclComm_t& comm)
+void checkNCCLError(NCCLComm& comm)
 {
     while (true) {
-	{
-	    std::lock_guard<std::mutex> lock(m);
-	    ncclResult_t result;
-	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
-	    if (result != ncclSuccess) {
-		printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
-		printf("[DEBUG] ncclComAbort starts!\n");
-		auto start = std::chrono::steady_clock::now();
-		NCCLCHECK(ncclCommAbort(comm));
-		auto end = std::chrono::steady_clock::now();
-		double time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
-	    }
-	}
+	comm.CheckNCCLError();
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
@@ -139,14 +164,14 @@ int main(int argc, char* argv[])
     //initializing NCCL
     NCCLCHECK(ncclCommInitRank(&comm, nRanks, id, myRank));
 
-    std::thread background_watchdog_thread(checkNCCLError, std::ref(comm));
+    NCCLComm nccl_comm(comm);
+    std::thread background_watchdog_thread(checkNCCLError, std::ref(nccl_comm));
 
     //communicating using NCCL
     while (true) {
 	{
-	    std::lock_guard<std::mutex> lock(m);
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
-		comm, s));
+		nccl_comm.GetNCCLComm(), s));
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -154,9 +179,6 @@ int main(int argc, char* argv[])
     //free device buffers
     CUDACHECK(cudaFree(sendbuff));
     CUDACHECK(cudaFree(recvbuff));
-
-    //finalizing NCCL
-    ncclCommDestroy(comm);
 
     background_watchdog_thread.join();
 
