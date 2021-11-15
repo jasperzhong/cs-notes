@@ -168,10 +168,22 @@ int main(int argc, char* argv[])
     std::thread background_watchdog_thread(checkNCCLError, std::ref(nccl_comm));
 
     //communicating using NCCL
-    while (true) {
+    double mean_time_elapsed = 0;
+    for (int i = 0; i < 10; ++i) {
 	{
+	    float time_elapsed = 0;
+	    cudaEvent_t start, stop;
+	    CUDACHECK(cudaEventCreate(&start, 0));
+	    CUDACHECK(cudaEventRecord(start, s));
+
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		nccl_comm.GetNCCLComm(), s));
+
+	    CUDACHECK(cudaEventCreate(&stop, 0));
+	    CUDACHECK(cudaEventRecord(stop, s));
+	    CUDACHECK(cudaEventSynchronize(stop));
+	    CUDACHECK(cudaEventElapsedTime(&time_elapsed, start, stop));
+	    mean_time_elapsed += time_elapsed;
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
