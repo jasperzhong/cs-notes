@@ -108,7 +108,6 @@ void handler(int signum)
 int main(int argc, char* argv[])
 {
     int size = 32 * 1024 * 1024;
-    int sync_threshold = 100;
 
     int myRank, nRanks, localRank = 0;
 
@@ -156,20 +155,12 @@ int main(int argc, char* argv[])
 
     std::thread background_watchdog_thread(checkNCCLError, std::ref(comm));
 
-    int cnt = 0;
     //communicating using NCCL
     while (true) {
 	{
 	    AutoNcclGroup nccl_group_guard;
 	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 		comm, s));
-	}
-	cnt++;
-	if (cnt == sync_threshold) {
-	    //completing NCCL operation by synchronizing on the CUDA stream
-	    CUDACHECK(cudaStreamSynchronize(s));
-	    cnt = 0;
-	    printf("sync done\n");
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
