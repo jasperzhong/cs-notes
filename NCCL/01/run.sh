@@ -2,7 +2,7 @@
 # `make` before running on both machines
 # run this script on net-g1
 
-export LD_LIBRARY_PATH=$LD_LDBRARY_PATH:/usr/local/cuda/lib 
+export LD_LIBRARY_PATH=$LD_LDBRARY_PATH:/home/yczhong/repos/nccl/build/lib
 export NCCL_SOCKET_IFNAME=eth2
 export NCCL_DEBUG=INFO
 export NCCL_IB_DISABLE=1

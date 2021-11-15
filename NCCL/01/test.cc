@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
     while (true) {
 	NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
 	    nccl_comm.GetNCCLComm(), s));
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     //free device buffers
