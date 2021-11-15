@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <mpich/mpi.h>
+#include <openmpi/mpi.h>
 #include <signal.h>
 #include <thread>
 #include <unistd.h>

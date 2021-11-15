@@ -1,8 +1,8 @@
 CC=g++
 CFLAGS=-g1
-INCLUDE=-I/usr/local/cuda/include -I/usr/lib/mpich/include
-LIBRARY_PATH=-L/usr/local/cuda/lib64  -L/usr/local/cuda/lib -L/usr/lib/mpich/lib 
-LIBRARY=-lcudart -lnccl -lmpi -pthread
+INCLUDE=-I/usr/local/cuda/include -I/usr/include/openmpi
+LIBRARY_PATH=-L/usr/local/cuda/lib64  -L/usr/local/cuda/lib 
+LIBRARY=-lcudart -lnccl -lmpi -lmpi_cxx -pthread
 
 TARGET=test
 all: $(TARGET)
