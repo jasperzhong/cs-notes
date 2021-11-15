@@ -165,35 +165,20 @@ int main(int argc, char* argv[])
     NCCLCHECK(ncclCommInitRank(&comm, nRanks, id, myRank));
 
     NCCLComm nccl_comm(comm);
-    // std::thread background_watchdog_thread(checkNCCLError, std::ref(nccl_comm));
+    std::thread background_watchdog_thread(checkNCCLError, std::ref(nccl_comm));
 
     //communicating using NCCL
-    double mean_time_elapsed = 0;
-    for (int i = 0; i < 10; ++i) {
-	{
-	    float time_elapsed = 0;
-	    cudaEvent_t start, stop;
-	    CUDACHECK(cudaEventCreate(&start, 0));
-	    CUDACHECK(cudaEventRecord(start, s));
-
-	    NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
-		nccl_comm.GetNCCLComm(), s));
-
-	    CUDACHECK(cudaEventCreate(&stop, 0));
-	    CUDACHECK(cudaEventRecord(stop, s));
-	    CUDACHECK(cudaEventSynchronize(stop));
-	    CUDACHECK(cudaEventElapsedTime(&time_elapsed, start, stop));
-	    mean_time_elapsed += time_elapsed;
-	}
+    while (true) {
+	NCCLCHECK(ncclAllReduce((const void*)sendbuff, (void*)recvbuff, size, ncclFloat, ncclSum,
+	    nccl_comm.GetNCCLComm(), s));
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    printf("mean_time_elapsed = %.2f ms\n", mean_time_elapsed / 10.0);
 
     //free device buffers
     CUDACHECK(cudaFree(sendbuff));
     CUDACHECK(cudaFree(recvbuff));
 
-    // background_watchdog_thread.join();
+    background_watchdog_thread.join();
 
     printf("[Rank %d] Success \n", myRank);
     return 0;
