@@ -74,15 +74,10 @@ static void getHostName(char* hostname, int maxlen)
 
 void checkNCCLError(ncclComm_t& comm)
 {
-    int cnt = 0;
     while (true) {
 	{
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
-	    cnt++;
-	    if ((cnt % 100) == 0) {
-		printf("cnt=%d ncclCommGetAsyncError result: %s\n", cnt, ncclGetErrorString(result));
-	    }
 	    if (result != ncclSuccess) {
 		printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
 		printf("[DEBUG] ncclComAbort starts!\n");
