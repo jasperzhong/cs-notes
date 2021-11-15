@@ -80,9 +80,8 @@ void checkNCCLError(ncclComm_t& comm)
 	    ncclResult_t result;
 	    NCCLCHECK(ncclCommGetAsyncError(comm, &result));
 	    cnt++;
-	    if (cnt == 100) {
-		printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
-		cnt = 0;
+	    if ((cnt % 100) == 0) {
+		printf("cnt=%d ncclCommGetAsyncError result: %s\n", cnt, ncclGetErrorString(result));
 	    }
 	    if (result != ncclSuccess) {
 		printf("ncclCommGetAsyncError result: %s\n", ncclGetErrorString(result));
@@ -94,7 +93,7 @@ void checkNCCLError(ncclComm_t& comm)
 		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
 	    }
 	}
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	std::this_thread::yield();
     }
 }
 
