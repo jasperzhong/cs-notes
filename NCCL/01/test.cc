@@ -93,7 +93,7 @@ void checkNCCLError(ncclComm_t& comm)
 		printf("[DEBUG] ncclComAbort finishes! Time elapsed = %2.f ms.\n", time_elapsed);
 	    }
 	}
-	std::this_thread::yield();
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
