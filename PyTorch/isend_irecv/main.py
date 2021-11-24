@@ -15,32 +15,19 @@ def main():
     rank = torch.distributed.get_rank()
     size = (1000000, )
     for _ in range(100):
-        if rank == 0:
-            x = torch.ones(size=size, requires_grad=True).cuda()
-            y = torch.zeros(size=size, requires_grad=True).cuda()
-            send_op = torch.distributed.P2POp(torch.distributed.isend, x,
-                                              1)
-            recv_op = torch.distributed.P2POp(torch.distributed.irecv, y,
-                                              1)
-            reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
-            for req in reqs:
-                req.wait()
+        dst_rank = (rank + 1) % 2
+        x = torch.ones(size=size, requires_grad=True).cuda()
+        y = torch.zeros(size=size, requires_grad=True).cuda()
+        send_op = torch.distributed.P2POp(torch.distributed.isend, x,
+                                          dst_rank)
+        recv_op = torch.distributed.P2POp(torch.distributed.irecv, y,
+                                          dst_rank)
+        reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
+        for req in reqs:
+            req.wait()
 
-            z = x + y
-            assert z[0].item() == 2, "wrong"
-        else:
-            y = torch.ones(size=size, requires_grad=True).cuda()
-            x = torch.zeros(size=size, requires_grad=True).cuda()
-            send_op = torch.distributed.P2POp(torch.distributed.isend, x,
-                                              0)
-            recv_op = torch.distributed.P2POp(torch.distributed.irecv, y,
-                                              0)
-            reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
-            for req in reqs:
-                req.wait()
-
-            z = x + y
-            assert z[0].item() == 2, "wrong"
+        z = x + y
+        assert z[0].item() == 2, "wrong"
 
     print("right")
 
