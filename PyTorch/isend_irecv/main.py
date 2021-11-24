@@ -15,13 +15,13 @@ def main():
     rank = torch.distributed.get_rank()
     size = (1000000, )
     if rank == 0:
-        x = torch.zeros(size=size)
+        x = torch.zeros(size=size).cuda()
         req = torch.distributed.irecv(x, 1)
         req.wait()
         x += x
         print(x[0])
     else:
-        x = torch.ones(size=size)
+        x = torch.ones(size=size).cuda()
         torch.distributed.send(x, 0)
 
 
