@@ -14,15 +14,18 @@ def main():
 
     rank = torch.distributed.get_rank()
     size = (1000000, )
-    if rank == 0:
-        x = torch.zeros(size=size).cuda()
-        req = torch.distributed.irecv(x, 1)
-        req.wait()
-        x += x
-        print(x[0])
-    else:
-        x = torch.ones(size=size).cuda()
-        torch.distributed.send(x, 0)
+    for _ in range(100):
+        if rank == 0:
+            x = torch.zeros(size=size).cuda()
+            req = torch.distributed.irecv(x, 1)
+            req.wait()
+            x += x
+            assert x[0].item() == 2, "wrong"
+        else:
+            x = torch.ones(size=size).cuda()
+            torch.distributed.send(x, 0)
+    
+    print("right")
 
 
 if __name__ == '__main__':
