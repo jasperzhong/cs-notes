@@ -13,7 +13,7 @@ def main():
     )
 
     rank = torch.distributed.get_rank()
-    size = 1000000
+    size = (1000000, )
     if rank == 0:
         x = torch.zeros(size=size)
         req = torch.distributed.irecv(x, 1)
