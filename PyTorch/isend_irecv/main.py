@@ -16,15 +16,32 @@ def main():
     size = (1000000, )
     for _ in range(100):
         if rank == 0:
-            x = torch.zeros(size=size).cuda()
-            req = torch.distributed.irecv(x, 1)
-            req.wait()
-            x += x
-            assert x[0].item() == 2, "wrong"
+            x = torch.ones(size=size, requires_grad=True)
+            y = torch.zeros(size=size, requires_grad=True)
+            send_op = torch.distributed.P2POp(torch.distributed.isend, x,
+                                              1)
+            recv_op = torch.distributed.P2POp(torch.distributed.irecv, y,
+                                              1)
+            reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
+            for req in reqs:
+                req.wait()
+
+            z = x + y
+            assert z[0].item() == 2, "wrong"
         else:
-            x = torch.ones(size=size).cuda()
-            torch.distributed.send(x, 0)
-    
+            y = torch.ones(size=size, requires_grad=True)
+            x = torch.zeros(size=size, requires_grad=True)
+            send_op = torch.distributed.P2POp(torch.distributed.isend, x,
+                                              0)
+            recv_op = torch.distributed.P2POp(torch.distributed.irecv, y,
+                                              0)
+            reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
+            for req in reqs:
+                req.wait()
+
+            z = x + y
+            assert z[0].item() == 2, "wrong"
+
     print("right")
 
 
