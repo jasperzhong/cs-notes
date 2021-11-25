@@ -26,6 +26,8 @@ def main():
         for req in reqs:
             req.wait()
 
+        torch.cuda.synchronize()
+
         z = x + y
         assert z[0].item() == 2, "wrong"
 
