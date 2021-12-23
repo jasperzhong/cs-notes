@@ -22,8 +22,11 @@ def main():
     print(f"{rank}/{world_size} -> {group_rank}/{group_size}")
 
     x = torch.randn(100).cuda()
+    torch.distributed.all_reduce(x)
+    print(f"{rank}/{world_size} {torch.sum(x)}")
+
     torch.distributed.all_reduce(x, group=new_group)
-    print(f"{rank} {torch.sum(x)}")
+    print(f"{group_rank}/{group_size} {torch.sum(x)}")
 
 
 if __name__ == '__main__':
