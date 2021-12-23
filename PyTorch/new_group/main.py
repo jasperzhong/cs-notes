@@ -19,6 +19,11 @@ def main():
     new_rank = torch.distributed.get_rank(new_group)
     print(f"{rank} -> {new_rank}")
 
+    x = torch.randn(100)
+    torch.distributed.all_reduce(x, group=new_group)
+    print(f"{rank} {torch.sum(x)}")
+
+
 
 if __name__ == '__main__':
     main()
