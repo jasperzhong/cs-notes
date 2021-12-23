@@ -16,8 +16,8 @@ def main():
     if rank % 2 == 0:
         new_group = torch.distributed.new_group([r for r in range(world_size) if r % 2 == 0])
     else:
-        time.sleep(1)
         new_group = torch.distributed.new_group([r for r in range(world_size) if r % 2 == 1])
+        time.sleep(1)
 
     group_size = torch.distributed.get_world_size(new_group)
     group_rank = torch.distributed.get_rank(new_group)
