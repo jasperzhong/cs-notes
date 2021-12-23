@@ -16,7 +16,8 @@ def main():
     else:
         new_group = torch.distributed.new_group([1, 3])
 
-    print(torch.distributed.get_rank(new_group))
+    new_rank = torch.distributed.get_rank(new_group)
+    print(f"{rank} -> {new_rank}")
 
 
 if __name__ == '__main__':
