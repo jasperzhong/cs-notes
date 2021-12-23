@@ -32,5 +32,8 @@ def main():
     print(f"{group_rank}/{group_size} {torch.sum(x)}")
 
 
+    time.sleep(5)
+
+
 if __name__ == '__main__':
     main()
