@@ -17,7 +17,6 @@ def main():
         new_group = torch.distributed.new_group([r for r in range(world_size) if r % 2 == 0])
     else:
         new_group = torch.distributed.new_group([r for r in range(world_size) if r % 2 == 1])
-        time.sleep(1)
 
     group_size = torch.distributed.get_world_size(new_group)
     group_rank = torch.distributed.get_rank(new_group)
@@ -27,6 +26,8 @@ def main():
     torch.distributed.all_reduce(x)
     print(f"{rank}/{world_size} {torch.sum(x)}")
 
+    if rank % 2 == 1:
+        time.sleep(1)
     torch.distributed.all_reduce(x, group=new_group)
     print(f"{group_rank}/{group_size} {torch.sum(x)}")
 
