@@ -22,7 +22,7 @@ def main():
     print(f"{rank}/{world_size} -> {group_rank}/{group_size}")
 
     x = torch.randn(100).cuda()
-    new_group.all_reduce(x)
+    torch.distributed.all_reduce(x, group=new_group)
     print(f"{rank} {torch.sum(x)}")
 
 
