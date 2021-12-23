@@ -11,10 +11,11 @@ def main():
     )
 
     rank = torch.distributed.get_rank()
-    if rank in [0, 2]:
-        new_group = torch.distributed.new_group([0, 2])
+    world_size = torch.distributed.get_world_size()
+    if rank % 2 == 0:
+        new_group = torch.distributed.new_group([r % 2 == 0 for r in range(world_size)])
     else:
-        new_group = torch.distributed.new_group([1, 3])
+        new_group = torch.distributed.new_group([r % 2 == 1 for r in range(world_size)])
 
     new_rank = torch.distributed.get_rank(new_group)
     print(f"{rank} -> {new_rank}")
