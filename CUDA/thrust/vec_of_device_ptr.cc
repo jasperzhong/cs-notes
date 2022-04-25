@@ -15,6 +15,7 @@ int main() {
 		// since dev_ptr_vec[i] is a device reference
 		// to the device_ptr and device_free does not
 		// recognize device reference...
+		// Unfortunately, device_reference<T> cannot expose members of T, but it can convert to T.
 		// https://stackoverflow.com/questions/6624049/passing-thrustdevice-vector-to-a-function-by-reference
 		thrust::device_ptr<int> ptr(dev_ptr_vec[i]);
 		thrust::device_free(ptr);
