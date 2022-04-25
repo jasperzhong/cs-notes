@@ -8,9 +8,12 @@ __global__ void add(int n, float *x, float *y) {
 int main(void) {
     int N = 1 << 20;
     float *x, *y;
+    float *dx, *dy;
 
-    cudaMallocManaged(&x, N*sizeof(float));
-    cudaMallocManaged(&y, N*sizeof(float));
+    cudaHostAlloc(&x, N*sizeof(float), cudaHostAllocMapped);
+    cudaHostAlloc(&y, N*sizeof(float), cudaHostAllocMapped);
+    cudaHostGetDevicePointer(&dx, x, 0);
+    cudaHostGetDevicePointer(&dy, y, 0);
 
     for (int i = 0; i < N; ++i) {
         x[i] = 1.0f;
@@ -20,7 +23,7 @@ int main(void) {
     int blockSize = 256;
     int numBlocks = (N + blockSize - 1) / blockSize;
     for (int i = 0; i < 3; ++i) {
-        add<<<numBlocks, blockSize>>>(N, x, y);
+        add<<<numBlocks, blockSize>>>(N, dx, dy);
     }
 
     cudaDeviceSynchronize();

@@ -1,6 +1,3 @@
-#include <iostream>
-#include <cmath>
-
 __global__ void add(int n, float *x, float *y) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -28,12 +25,9 @@ int main(void) {
 
     int blockSize = 256;
     int numBlocks = (N + blockSize - 1) / blockSize;
-    add<<<numBlocks, blockSize>>>(N, x, y);
+    for (int i = 0; i < 3; ++i) {
+        add<<<numBlocks, blockSize>>>(N, x, y);
+    }
 
     cudaDeviceSynchronize();
-
-    float maxError = 0.0f;
-    for (int i = 0; i < N; ++i) 
-        maxError = fmax(maxError, fabs(y[i] - 3.0f));
-    std::cout << "Max error:" << maxError << std::endl;
 }

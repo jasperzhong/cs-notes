@@ -9,8 +9,8 @@ int main(void) {
     int N = 1 << 20;
     float *x, *y;
 
-    cudaMallocManaged(&x, N*sizeof(float));
-    cudaMallocManaged(&y, N*sizeof(float));
+    cudaHostAlloc(&x, N*sizeof(float), 0);
+    cudaHostAlloc(&y, N*sizeof(float), 0);
 
     for (int i = 0; i < N; ++i) {
         x[i] = 1.0f;
