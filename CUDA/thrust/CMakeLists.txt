@@ -5,6 +5,7 @@ enable_language(CUDA)
 find_package(Thrust REQUIRED CONFIG)
 thrust_create_target(Thrust)
 
+set(CMAKE_CUDA_ARCHITECTURES "60")
 include_directories(include/)
 
 file(GLOB thrust_learn_sources "*.cc")
@@ -13,5 +14,4 @@ foreach(source ${thrust_learn_sources})
 	add_executable(${target} ${source})
 	set_source_files_properties(${source} PROPERTIES LANGUAGE CUDA)
 	target_link_libraries(${target} Thrust)
-        target_compile_options(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--generate-code=arch=compute_60,code=sm_60>")
 endforeach()
