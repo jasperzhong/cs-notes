@@ -5,6 +5,7 @@ enable_language(CUDA)
 find_package(Thrust REQUIRED CONFIG)
 thrust_create_target(Thrust)
 
+set(CMAKE_CUDA_ARCHITECTURES "60")
 include_directories(include/)
 
 file(GLOB thrust_learn_sources "*.cc")
