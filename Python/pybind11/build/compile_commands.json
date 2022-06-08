@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/yczhong/repos/cs-notes/Python/pybind11/build",
+  "command": "/usr/bin/c++ -Dexample_EXPORTS -isystem /home/yczhong/repos/cs-notes/Python/pybind11/pybind11/include -isystem /home/yczhong/.conda/envs/jasper/include/python3.8 -fPIC -fvisibility=hidden -flto -fno-fat-lto-objects -o CMakeFiles/example.dir/api.cc.o -c /home/yczhong/repos/cs-notes/Python/pybind11/api.cc",
+  "file": "/home/yczhong/repos/cs-notes/Python/pybind11/api.cc"
+},
+{
+  "directory": "/home/yczhong/repos/cs-notes/Python/pybind11/build",
+  "command": "/usr/bin/c++ -Dexample_EXPORTS -isystem /home/yczhong/repos/cs-notes/Python/pybind11/pybind11/include -isystem /home/yczhong/.conda/envs/jasper/include/python3.8 -fPIC -fvisibility=hidden -flto -fno-fat-lto-objects -o CMakeFiles/example.dir/test_return_multiple.cc.o -c /home/yczhong/repos/cs-notes/Python/pybind11/test_return_multiple.cc",
+  "file": "/home/yczhong/repos/cs-notes/Python/pybind11/test_return_multiple.cc"
+},
+{
+  "directory": "/home/yczhong/repos/cs-notes/Python/pybind11/build",
+  "command": "/usr/bin/c++ -Dexample_EXPORTS -isystem /home/yczhong/repos/cs-notes/Python/pybind11/pybind11/include -isystem /home/yczhong/.conda/envs/jasper/include/python3.8 -fPIC -fvisibility=hidden -flto -fno-fat-lto-objects -o CMakeFiles/example.dir/test_vector.cc.o -c /home/yczhong/repos/cs-notes/Python/pybind11/test_vector.cc",
+  "file": "/home/yczhong/repos/cs-notes/Python/pybind11/test_vector.cc"
+}
+]
