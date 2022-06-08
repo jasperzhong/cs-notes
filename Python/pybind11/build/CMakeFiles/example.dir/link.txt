@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -flto -shared  -o example.cpython-38-x86_64-linux-gnu.so CMakeFiles/example.dir/api.cc.o CMakeFiles/example.dir/test_return_multiple.cc.o CMakeFiles/example.dir/test_vector.cc.o 
