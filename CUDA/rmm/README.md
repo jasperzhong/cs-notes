@@ -11,7 +11,7 @@ My env:
 git clone --recurse-submodules https://github.com/rapidsai/rmm.git
 cd rmm
 git checkout branch-0.19 
-mkdir build
+mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX 
 make -j
 make install
