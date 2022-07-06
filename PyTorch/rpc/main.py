@@ -12,12 +12,16 @@ def main():
         'nccl', init_method="env://",
     )
 
-
     rank = torch.distributed.get_rank()
     world_size = torch.distributed.get_world_size()
 
     rpc.init_rpc(
-        name='worker{}'.format(rank), rank=rank, world_size=world_size)
+        name='worker{}'.format(rank), rank=rank, world_size=world_size,
+        rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
+            num_worker_threads=8,
+            rpc_timeout=10
+        )
+    )
 
     ret = rpc.rpc_sync(
         "worker{}".format((rank + 1) % world_size),
