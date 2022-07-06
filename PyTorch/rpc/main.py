@@ -19,13 +19,12 @@ def main():
     rpc.init_rpc(
         name='worker{}'.format(rank), rank=rank, world_size=world_size)
 
-    if rank == 0:
-        ret = rpc.rpc_sync(
-            "worker{}".format((rank + 1) % world_size),
-            torch.add, args=(torch.tensor(1),
-                             torch.tensor(2)))
-        print("worker{}".format(rank))
-        print(ret)
+    ret = rpc.rpc_sync(
+        "worker{}".format((rank + 1) % world_size),
+        torch.add, args=(torch.tensor(1),
+                         torch.tensor(2)))
+    print("worker{}".format(rank))
+    print(ret)
 
     rpc.shutdown()
 
