@@ -1,5 +1,7 @@
 # JavaScript
 
+## JavaScript语法
+
 语法上和Python基本差不多. 总结几个要点.
 
 1. JS不需要进行类型声明，是一种弱类型(weakly typed)语言. 
@@ -59,14 +61,18 @@ var lennon = {name: "John", year: 1940, living: false}
 
 花括号语法很像Python的dict. 
 
-**内建对象**: 比如`Array`, `Math`, `Date`
+三种类型对象: 
+- 内建对象: 比如`Array`, `Math`, `Date`
 
 ```js
 var num = Math.round(3.14);
 var current_date = new Date();
 ```
 
-**宿主对象**: 这些对象不是由JavaScriptd语言本身而是由它的运行环境提供的, 比如`document`对象. 
+- **宿主对象**: 这些对象不是由JavaScriptd语言本身而是由它的运行环境提供的, 比如`document`对象. 
+
+- 用户自定义对象.
+
 
 
 5. 语句
@@ -113,3 +119,116 @@ var number = square(20);
 alert(total);
 ```
 
+## DOM
+
+Dcoument Object Model (DOM)
+
+DOM把一份文档表示为tree. 用parent, child, sibling表示之间关系. 
+
+节点
+- **元素节点(element node)**. 比如文本段落元素"p", 无序清单元素"ul", 列表项元素"li". **document中每个元素节点都是一个对象**.
+- 文本节点(text node). 例如<p>元素包含文本"hello world". 
+- 属性节点(attribute node). 例如`<p title='test'>hello world</p>`, "title='test'"就是属性节点. 
+
+### CSS 
+
+层叠样式表. 对样式的声明放在<head>部分的<style>标签之间. 
+
+CSS声明元素样式与JavaScript函数定义语法相似:
+```css
+selector {
+    property: value;
+}
+```
+
+CSS的一个特点是**继承**, 即DOM上各个元素继承其父元素的样式属性. 
+
+例如
+```css
+body {
+    color: white;
+    background-color: black;
+}
+```
+
+这些颜色不仅作用于body，而且作用于嵌套在body元素内部的所有元素. 
+
+为了作用于特定元素，需要使用class属性后者id属性. 
+
+**class属性**
+
+可以在所有元素上任意应用class属性.
+```html
+<p class="special">hello world</p>
+<h2 class="speial">hello world</p>
+```
+
+在样式表中, 为class属性相同的所有元素定义同一种样式:
+```css
+.special {
+    font-style: italic;
+}
+```
+
+还可以为一种特定类型的元素定义一种特定的样式:
+```css
+h2.special {
+    text-transform: uppercase;
+}
+```
+
+**id属性**
+
+id属性的用途是给网页里某个元素加上一个独一无二的标识符. 
+```html
+<ul id='purchases'>
+```
+
+在样式表中，可以为有特定id属性值的元素定义一种独享的样式:
+```css
+#purchases {
+    border: 1px solid white;
+    background-color: #333;
+    color: #ccc;
+    padding: 1em;
+}
+```
+
+尽管id本身只能使用一次, 样式表还是可以利用id属性为包含在该特定元素里的其他元素定义样式.
+```css
+#purchases li {
+    font-weight: bold;
+}
+```
+
+id属性像一个挂钩，一头连着文档里某个元素，另一头连着CSS样式表里的某个样式. 
+
+### 获取元素
+
+如何获取元素. document每个元素节点都是Object. 下面三个操作返回的都是Object(s). 
+
+1. `document.getElementById(id)`: 返回一个Object, 其id属性值为传入的id. 
+2. `document.getElementsByTagName(tag)`: 返回具有相同标签的Object数组. tag就是标签的名字，比如`li`. 甚至可以用通配符"*".
+3. `document.getElementsByClassName(class)`: 返回具有相同类名的元素的Object数组.
+
+
+### 获取和设置属性
+
+前面三个方法是如何获取元素. 获取元素后，可以获取它的各个属性. 
+
+1. `object.getAttribute(attribute)`
+
+```js
+var paras = document.getElementsByTagName("p");
+for (var i = 0; i < paras.length; i++) {
+    alert(paras[i].getAttribute("title"));
+}
+```
+
+2. `object.setAttribute(attribute, value)`
+
+如果`attribute`不存在，则创建一个属性. 若存在则覆盖.
+
+setAttribute对文档做出修改后是立刻生效的. 但在浏览器view source查看文档源代码却还是改变前的属性值. 也就是说，setAttribute做出的修改不会反映在文档本身的源代码里面. 
+
+DOM的工作模式: 先加载文档的静态内容，再动态刷新，动态b刷新不影响文档的静态内容. 所谓动态刷新，即对页面内容进行刷新却不需要再浏览器里刷新页面.
