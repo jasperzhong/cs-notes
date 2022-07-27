@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Image Gallery</title>
+        <link rel="stylesheet" href="styles/layout.css" media="screen">
+    </head>
+    <body>
+        <h1>Snapshot</h1>
+        <ul>
+            <li>
+                <a href="images/cat.jpg" title="cat" onclick="showPic(this); return false;">Cat</a>
+            </li>
+            <li>
+                <a href="images/china.jpg" title="china" onclick="showPic(this); return false;">China</a>
+            </li>
+            <li>
+                <a href="images/city.jpg" title="city" onclick="showPic(this); return false;">City</a>
+            </li>
+            <li>
+                <a href="images/moon.jpg" title="moon" onclick="showPic(this); return false;">Moon</a>
+            </li>
+            <li>
+                <a href="images/stary_sky.jpg" title="stary_sky" onclick="showPic(this); return false;">Stary Sky</a>
+            </li>
+            <li>
+                <a href="images/sunset.jpg" title="sunset" onclick="showPic(this); return false;">Sunset</a>
+            </li>
+        </ul>
+
+        <img id="placeholder" src="" alt="placeholder" height="300" width="400">
+        <p id="caption">Choose an image.</p>
+        <script type="text/javascript" src="scripts/gallery.js"></script>
+    </body>
+</html>
+

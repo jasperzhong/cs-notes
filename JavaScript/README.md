@@ -125,10 +125,12 @@ Dcoument Object Model (DOM)
 
 DOM把一份文档表示为tree. 用parent, child, sibling表示之间关系. 
 
-节点
-- **元素节点(element node)**. 比如文本段落元素"p", 无序清单元素"ul", 列表项元素"li". **document中每个元素节点都是一个对象**.
-- 文本节点(text node). 例如<p>元素包含文本"hello world". 
-- 属性节点(attribute node). 例如`<p title='test'>hello world</p>`, "title='test'"就是属性节点. 
+节点，每个节点有一个`nodeType`属性. 
+- **元素节点(element node)**. 比如文本段落元素"p", 无序清单元素"ul", 列表项元素"li". `nodeType=1`.
+- 文本节点(text node). 例如<p>元素包含文本"hello world". `nodeType=2`.
+- 属性节点(attribute node). 例如`<p title='test'>hello world</p>`, "title='test'"就是属性节点. `nodeType=3`.
+
+
 
 ### CSS 
 
@@ -232,3 +234,11 @@ for (var i = 0; i < paras.length; i++) {
 setAttribute对文档做出修改后是立刻生效的. 但在浏览器view source查看文档源代码却还是改变前的属性值. 也就是说，setAttribute做出的修改不会反映在文档本身的源代码里面. 
 
 DOM的工作模式: 先加载文档的静态内容，再动态刷新，动态b刷新不影响文档的静态内容. 所谓动态刷新，即对页面内容进行刷新却不需要再浏览器里刷新页面.
+
+
+一些属性:
+- childNodes
+- nodeType
+- nodeValue
+- firstChild
+- lastChild
