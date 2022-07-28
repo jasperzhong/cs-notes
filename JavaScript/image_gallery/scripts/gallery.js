@@ -1,4 +1,3 @@
-
 function addLoadEvent(func) {
     var oldOnLoad = window.onload;
     if (typeof window.onload != 'function') {
@@ -18,6 +17,7 @@ function prepareLinks() {
             links[i].onclick = function () {
                 return !showPic(this);
             }
+        }
     }
 }
 
