@@ -242,3 +242,81 @@ DOM的工作模式: 先加载文档的静态内容，再动态刷新，动态b�
 - nodeValue
 - firstChild
 - lastChild
+
+### 创建元素
+
+目的是动态修改网页结构. 
+
+- `document.createElement(nodeName)`: 创建一个元素节点. 
+- `parent.appendChild(child)`: 插入到parent节点作为子节点
+- `document.createTextNode(text)`: 创建一个文本节点
+
+
+```js
+window.onload = funcion() {
+    var para = document.createElement("p");
+    var testdiv = document.getElementById("testdiv");
+    textdiv.appendChild(para);
+    var txt = document.createTextNode("Hello world!");
+    para.appendChild(txt);
+}
+```
+
+- `parentElement.insertBefore(newElement, targetElement)`
+
+但是DOM居然没有`insertAfter`方法...但可以自己实现一个
+```js
+function insertAfter(newElement, targetElement) {
+    var parent = targetElement.paraentNode;
+    if (parent.lastChild == targetElement) {
+        parent.appendChild(newElement);
+    } else {
+        parent.insertBefore(newElement, targetElement.nextSibling);
+    }
+}
+```
+
+
+
+- 结构(html)、行为(javascript)和样式(css)分离
+
+### Ajax
+
+异步请求数据. 关键的类是`XMLHttpRequest`，其中最有用的方法是`open`，它用来指定服务器上将要访问的文件，指定请求类型: GET, POST或者SEND. 
+
+```js
+function getNewContent() {
+    var request = new XMLHttpRequest();
+    request.open("GET", "example.txt", true);
+    request.onreadystatechange = function() {
+        if (request.readState == 4) {
+            var para = document.createElement("p");
+            var txt = document.createTextNode(request.responseText);
+            para.appendChild(txt);
+            document.getElementById('new').appendChild(para);
+        }
+    }
+    request.send(null);
+}
+```
+
+注意Ajax的**异步性**: 脚本在发送XMLHttpRequest请求后，仍会继续执行，不会等待响应返回. 
+
+代码中的`onreadstatechange`是一个事件处理函数，它会在服务器给XMLHttpRequst对象发送回响应的时候被触发. 
+
+```js
+request.onreadystatechange = doSomething;
+```
+
+`readState`属性
+- 0: 未初始化
+- 1: 正在加载
+- 2: 加载完毕
+- 3: 正在交互
+- 4: 完成
+
+访问服务器发回来的数据通过: 
+- `responseText`属性
+- `responseXML`属性
+
+
