@@ -101,6 +101,14 @@ for (var i = 0; i < beatles.length; i++) {
 }
 ```
 
+也可以用类似于Python的for
+```js
+for (var name in beatles) {
+    alert(name);
+}
+
+```
+
 6. 函数
 
 注意`var`关键词可以明确为函数变量作用域.
