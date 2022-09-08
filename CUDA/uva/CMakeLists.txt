@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.19)
+project(CUDA_LEARN)
+enable_language(CUDA)
+
+include(FindCUDA/select_compute_arch)
+CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+message(STATUS "CUDA_ARCH_LIST: ${CUDA_ARCH_LIST}")
+
+file(GLOB cuda_learn_sources "*.cu")
+foreach(source ${cuda_learn_sources})
+    get_filename_component(target ${source} NAME_WLE)
+    add_executable(${target} ${source})
+    # set_source_files_properties(${source} PROPERTIES LANGUAGE CUDA)
+endforeach()
