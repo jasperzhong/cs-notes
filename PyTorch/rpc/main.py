@@ -39,6 +39,8 @@ def main():
     print("worker{}".format(rank))
     print(ret)
 
+    torch.distributed.barrier()
+
     rpc.shutdown()
 
 
