@@ -5,6 +5,13 @@ import torch.distributed
 import torch.distributed.rpc as rpc
 
 
+def add(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    a = a.cuda()
+    b = b.cuda()
+    c = a + b
+    return c.cpu()
+
+
 def main():
     local_rank = int(os.environ['LOCAL_RANK'])
     torch.cuda.set_device(local_rank)
@@ -23,8 +30,10 @@ def main():
 
     ret = rpc.rpc_sync(
         "worker{}".format((rank + 1) % world_size),
-        torch.add, args=(torch.tensor(1),
-                         torch.tensor(2)))
+        add,
+        args=(torch.ones(1), torch.ones(1))
+    )
+
     print("worker{}".format(rank))
     print(ret)
 
