@@ -8,9 +8,7 @@ import torch.distributed.rpc as rpc
 def main():
     local_rank = int(os.environ['LOCAL_RANK'])
     torch.cuda.set_device(local_rank)
-    torch.distributed.init_process_group(
-        'nccl', init_method="env://",
-    )
+    torch.distributed.init_process_group('nccl')
 
     rank = torch.distributed.get_rank()
     world_size = torch.distributed.get_world_size()
