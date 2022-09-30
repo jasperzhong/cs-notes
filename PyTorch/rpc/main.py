@@ -23,21 +23,18 @@ def main():
     world_size = torch.distributed.get_world_size()
 
     rpc.init_rpc(
-        name='worker{}'.format(rank), rank=rank, world_size=world_size,
-        rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
-            num_worker_threads=8,
-            rpc_timeout=10
-        )
+        name='worker{}'.format(rank), rank=rank, world_size=world_size
     )
 
-    ret = rpc.rpc_sync(
+    fut = rpc.rpc_async(
         "worker{}".format((rank + 1) % world_size),
         add,
         args=(torch.ones(1), torch.ones(1))
     )
 
+    torch.distributed.barrier()
 
-    ret = ret.cuda()
+    ret = fut.wait().cuda()
     torch.distributed.all_reduce(ret)
 
     print("worker{}".format(rank))
