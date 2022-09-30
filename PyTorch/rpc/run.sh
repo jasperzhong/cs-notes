@@ -2,9 +2,10 @@
 
 INTERFACE="eth2"
 
+HOST_NODE_ADDR=10.28.1.16
+HOST_NODE_PORT=29400
 NNODES=2
 NPROC_PER_NODE=1
-MASTER_IP=10.28.1.16
 
 CURRENT_NODE_IP=$(ip -4 a show dev ${INTERFACE} | grep inet | cut -d " " -f6 | cut -d "/" -f1)
 if [ $CURRENT_NODE_IP = $HOST_NODE_ADDR ]; then
@@ -20,7 +21,7 @@ export TP_SOCKET_IFNAME=${INTERFACE}
 cmd="python3 -m torch.distributed.run \
     --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE \
     --rdzv_id=1234 --rdzv_backend=c10d \
-    --rdzv_endpoint=$MASTER_IP \
+    --rdzv_endpoint=$HOST_NODE_ADDR:$HOST_NODE_PORT \
     --rdzv_conf is_host=$IS_HOST \
     main.py"
 
