@@ -36,11 +36,14 @@ def main():
         args=(torch.ones(1), torch.ones(1))
     )
 
+
+    ret = ret.cuda()
+    torch.distributed.all_reduce(ret)
+
     print("worker{}".format(rank))
     print(ret)
 
     torch.distributed.barrier()
-
     rpc.shutdown()
 
 
