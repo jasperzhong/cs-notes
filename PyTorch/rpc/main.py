@@ -6,6 +6,8 @@ import torch.distributed.rpc as rpc
 
 
 def add(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    local_rank = int(os.environ['LOCAL_RANK'])
+    torch.cuda.set_device(local_rank)
     a = a.cuda()
     b = b.cuda()
     c = a + b
