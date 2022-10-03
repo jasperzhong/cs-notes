@@ -5,13 +5,28 @@ import torch.distributed
 import torch.distributed.rpc as rpc
 
 
-def add(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
-    local_rank = int(os.environ['LOCAL_RANK'])
-    torch.cuda.set_device(local_rank)
-    a = a.cuda()
-    b = b.cuda()
-    c = a + b
-    return c.cpu()
+class CustomClass:
+    def __init__(self):
+        self.a: torch.Tensor = None
+        self.b: torch.Tensor = None
+        self.c: int = 0
+
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+
+
+globals()['CustomClass'] = CustomClass
+
+
+def add(a: torch.Tensor, b: torch.Tensor) -> CustomClass:
+    ret = CustomClass()
+    ret.a = torch.randn_like(a)
+    ret.b = torch.randn_like(b)
+    ret.c = int(torch.randn(1).item())
+    return ret
 
 
 def main():
@@ -32,10 +47,7 @@ def main():
         args=(torch.ones(1), torch.ones(1))
     )
 
-    torch.distributed.barrier()
-
     ret = fut.wait().cuda()
-    torch.distributed.all_reduce(ret)
 
     print("worker{}".format(rank))
     print(ret)
