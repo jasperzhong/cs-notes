@@ -52,6 +52,9 @@ def main():
         name='worker{}'.format(rank), rank=rank, world_size=world_size
     )
 
+    dummy = torch.tensor(1).cuda()
+    torch.distributed.all_reduce(dummy)
+
     fut = rpc.rpc_async(
         "worker{}".format((rank + 1) % world_size),
         add,
