@@ -5,27 +5,38 @@ import torch.distributed
 import torch.distributed.rpc as rpc
 
 
-class CustomClass:
+class SamplingResultTorch:
     def __init__(self):
-        self.a: torch.Tensor = None
-        self.b: torch.Tensor = None
-        self.c: int = 0
+        self.row: torch.Tensor = None
+        self.col: torch.Tensor = None
+        self.num_src_nodes: int = None
+        self.num_dst_nodes: int = None
+        self.all_nodes: torch.Tensor = None
+        self.all_timestamps: torch.Tensor = None
+        self.delta_timestamps: torch.Tensor = None
+        self.eids: torch.Tensor = None
 
     def __getstate__(self):
         return self.__dict__
 
     def __setstate__(self, state):
-        self.__dict__ = state
+        self.__dict__.update(state)
 
 
-globals()['CustomClass'] = CustomClass
+# let pickle know how to serialize the SamplingResultType
+globals()['SamplingResultTorch'] = SamplingResultTorch
 
 
-def add(a: torch.Tensor, b: torch.Tensor) -> CustomClass:
-    ret = CustomClass()
-    ret.a = torch.randn_like(a)
-    ret.b = torch.randn_like(b)
-    ret.c = int(torch.randn(1).item())
+def add(a: torch.Tensor, b: torch.Tensor) -> SamplingResultTorch:
+    ret = SamplingResultTorch()
+    ret.row = torch.tensor([1, 2, 3])
+    ret.col = torch.tensor([4, 5, 6])
+    ret.num_src_nodes = 3
+    ret.num_dst_nodes = 3
+    ret.all_nodes = torch.tensor([1, 2, 3, 4, 5, 6])
+    ret.all_timestamps = torch.tensor([1, 2, 3, 4, 5, 6])
+    ret.delta_timestamps = torch.tensor([1, 2, 3, 4, 5, 6])
+    ret.eids = torch.tensor([1, 2, 3, 4, 5, 6])
     return ret
 
 
