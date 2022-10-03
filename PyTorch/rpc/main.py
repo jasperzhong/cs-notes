@@ -47,7 +47,7 @@ def main():
         args=(torch.ones(1), torch.ones(1))
     )
 
-    ret = fut.wait().cuda()
+    ret = fut.wait()
 
     print("worker{}".format(rank))
     print(ret)
