@@ -4,6 +4,8 @@ import torch
 import torch.distributed
 import torch.distributed.rpc as rpc
 
+from torchvision.models import resnet18
+
 
 class SamplingResultTorch:
     def __init__(self):
@@ -68,6 +70,13 @@ def main():
 
     dummy = torch.tensor(1).cuda()
     torch.distributed.all_reduce(dummy)
+
+    model = resnet18()
+    model.cuda()
+
+    model = torch.nn.parallel.DistributedDataParallel(
+        model, device_ids=[local_rank]
+    )
 
     fut = rpc.rpc_async(
         "worker{}".format((rank + 1) % world_size),
