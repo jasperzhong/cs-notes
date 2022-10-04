@@ -28,6 +28,11 @@ globals()['SamplingResultTorch'] = SamplingResultTorch
 
 
 def add(a: torch.Tensor, b: torch.Tensor) -> SamplingResultTorch:
+    # some cuda operations
+    a = a.cuda()
+    b = b.cuda()
+    c = a + b
+
     ret = SamplingResultTorch()
     ret.row = torch.tensor([1, 2, 3])
     ret.col = torch.tensor([4, 5, 6])
@@ -52,6 +57,15 @@ def main():
         name='worker{}'.format(rank), rank=rank, world_size=world_size
     )
 
+    fut = rpc.rpc_async(
+        "worker{}".format((rank + 1) % world_size),
+        add,
+        args=(torch.ones(1), torch.ones(1))
+    )
+    ret = fut.wait()
+    print("worker{}".format(rank))
+    print(ret)
+
     dummy = torch.tensor(1).cuda()
     torch.distributed.all_reduce(dummy)
 
@@ -60,9 +74,7 @@ def main():
         add,
         args=(torch.ones(1), torch.ones(1))
     )
-
     ret = fut.wait()
-
     print("worker{}".format(rank))
     print(ret)
 
