@@ -7,44 +7,11 @@ import torch.distributed.rpc as rpc
 from torchvision.models import resnet18
 
 
-class SamplingResultTorch:
-    def __init__(self):
-        self.row: torch.Tensor = None
-        self.col: torch.Tensor = None
-        self.num_src_nodes: int = None
-        self.num_dst_nodes: int = None
-        self.all_nodes: torch.Tensor = None
-        self.all_timestamps: torch.Tensor = None
-        self.delta_timestamps: torch.Tensor = None
-        self.eids: torch.Tensor = None
-
-    def __getstate__(self):
-        return self.__dict__
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-
-
-# let pickle know how to serialize the SamplingResultType
-globals()['SamplingResultTorch'] = SamplingResultTorch
-
-
-def add(a: torch.Tensor, b: torch.Tensor, x: int, y: int) -> SamplingResultTorch:
+def add(a: torch.Tensor, b: torch.Tensor):
     # some cuda operations
     a = a.cuda()
     b = b.cuda()
     c = a + b
-
-    ret = SamplingResultTorch()
-    ret.row = torch.tensor([1, 2, 3])
-    ret.col = torch.tensor([4, 5, 6])
-    ret.num_src_nodes = 3
-    ret.num_dst_nodes = 3
-    ret.all_nodes = torch.tensor([1, 2, 3, 4, 5, 6])
-    ret.all_timestamps = torch.tensor([1, 2, 3, 4, 5, 6])
-    ret.delta_timestamps = torch.tensor([1, 2, 3, 4, 5, 6])
-    ret.eids = torch.tensor([1, 2, 3, 4, 5, 6])
-    return ret
 
 
 def main():
@@ -61,11 +28,12 @@ def main():
 
     futures = []
     for i in range(10):
+        a = torch.rand(100, 100)
+        b = torch.rand(100, 100)
+        add(a, b)
         futures.append(rpc.rpc_async(
             "worker{}".format((rank + 1) % world_size),
-            add,
-            args=(torch.ones(1), torch.ones(1), i, i*i)
-        ))
+            add, args=(a, b)))
 
     for future in futures:
         future.wait()
@@ -79,14 +47,15 @@ def main():
         model, device_ids=[local_rank]
     )
 
+    a = torch.rand(100, 100)
+    b = torch.rand(100, 100)
+    add(a, b)
+
     fut = rpc.rpc_async(
         "worker{}".format((rank + 1) % world_size),
-        add,
-        args=(torch.ones(1), torch.ones(1), i, i*i)
-    )
-    ret = fut.wait()
-    print("worker{}".format(rank))
-    print(ret)
+        add, args=(a, b))
+    fut.wait()
+    print("worker{} done".format(rank))
 
     rpc.shutdown()
 
