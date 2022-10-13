@@ -29,7 +29,7 @@ class SamplingResultTorch:
 globals()['SamplingResultTorch'] = SamplingResultTorch
 
 
-def add(a: torch.Tensor, b: torch.Tensor) -> SamplingResultTorch:
+def add(a: torch.Tensor, b: torch.Tensor, x: int, y: int) -> SamplingResultTorch:
     # some cuda operations
     a = a.cuda()
     b = b.cuda()
@@ -60,11 +60,11 @@ def main():
     )
 
     futures = []
-    for _ in range(10):
+    for i in range(10):
         futures.append(rpc.rpc_async(
             "worker{}".format((rank + 1) % world_size),
             add,
-            args=(torch.ones(1), torch.ones(1))
+            args=(torch.ones(1), torch.ones(1), i, i*i)
         ))
 
     for future in futures:
@@ -82,7 +82,7 @@ def main():
     fut = rpc.rpc_async(
         "worker{}".format((rank + 1) % world_size),
         add,
-        args=(torch.ones(1), torch.ones(1))
+        args=(torch.ones(1), torch.ones(1), i, i*i)
     )
     ret = fut.wait()
     print("worker{}".format(rank))
