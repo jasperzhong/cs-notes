@@ -50,7 +50,7 @@ def add(a: torch.Tensor, b: torch.Tensor) -> SamplingResultTorch:
 def main():
     local_rank = int(os.environ['LOCAL_RANK'])
     torch.cuda.set_device(local_rank)
-    torch.distributed.init_process_group('nccl')
+    torch.distributed.init_process_group('gloo')
 
     rank = torch.distributed.get_rank()
     world_size = torch.distributed.get_world_size()
