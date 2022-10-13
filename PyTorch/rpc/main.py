@@ -59,17 +59,18 @@ def main():
         name='worker{}'.format(rank), rank=rank, world_size=world_size
     )
 
-    fut = rpc.rpc_async(
-        "worker{}".format((rank + 1) % world_size),
-        add,
-        args=(torch.ones(1), torch.ones(1))
-    )
-    ret = fut.wait()
-    print("worker{}".format(rank))
-    print(ret)
+    futures = []
+    for _ in range(10):
+        futures.append(rpc.rpc_async(
+            "worker{}".format((rank + 1) % world_size),
+            add,
+            args=(torch.ones(1), torch.ones(1))
+        ))
 
-    dummy = torch.tensor(1).cuda()
-    torch.distributed.all_reduce(dummy)
+    for future in futures:
+        future.wait()
+
+    torch.distributed.barrier()
 
     model = resnet18()
     model.cuda()
