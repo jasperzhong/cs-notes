@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.18)
 project(pybind11_example)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_subdirectory(pybind11)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cc)
-pybind11_add_module(example ${SRC_FILES})
+pybind11_add_module(kvstore ${SRC_FILES})
+
+find_package(Torch REQUIRED)
+find_library(TORCH_PYTHON_LIBRARY torch_python PATHS "${TORCH_INSTALL_PREFIX}/lib")
+target_link_libraries(kvstore PRIVATE ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -fPIC -Wall -ftree-vectorize")
+set(ARCH_FLAGS "-march=native -mtune=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ARCH_FLAGS}")
