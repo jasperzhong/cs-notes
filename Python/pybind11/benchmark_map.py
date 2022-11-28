@@ -10,7 +10,7 @@ from kvstore import KVStore
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-N', type=int, default=1000000)
-parser.add_argument('-batch_size', type=int, default=1000000)
+parser.add_argument('-batch_size', type=int, default=1000)
 args = parser.parse_args()
 
 
