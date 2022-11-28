@@ -8,7 +8,7 @@
 
 class KVStore {
  public:
-  using Key = unsigned long;
+  using Key = unsigned int;
   explicit KVStore(int num_threads = 8) : num_threads_(num_threads) {}
   ~KVStore() = default;
 
