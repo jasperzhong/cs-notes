@@ -3,8 +3,9 @@
 
 #include <torch/extension.h>
 
-#include <unordered_map>
 #include <vector>
+
+#include "absl/container/flat_hash_map.h"
 
 class KVStore {
  public:
@@ -23,25 +24,9 @@ class KVStore {
   }
 
  private:
-  std::unordered_map<Key, at::Tensor> store_;
+  absl::flat_hash_map<Key, at::Tensor> store_;
   int num_threads_;
 };
 
-void KVStore::set(const std::vector<Key>& keys, const at::Tensor& values) {
-  const std::size_t size = keys.size();
-  for (size_t i = 0; i < size; ++i) {
-    store_[keys[i]] = values[i];
-  }
-}
-
-at::Tensor KVStore::get(const std::vector<Key>& keys) const {
-  const auto size = keys.size();
-  std::vector<at::Tensor> values(size);
-#pragma omp parallel for num_threads(num_threads_) schedule(static)
-  for (size_t i = 0; i < size; ++i) {
-    values[i] = store_.at(keys[i]);
-  }
-  return at::stack(values);
-}
 
 #endif  // KVSTORE_H
