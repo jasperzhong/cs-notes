@@ -1,6 +1,5 @@
 #ifndef KVSTORE_H
 #define KVSTORE_H
-
 #include <torch/extension.h>
 
 #include <vector>
@@ -10,12 +9,12 @@
 class KVStore {
  public:
   using Key = unsigned int;
-  explicit KVStore(int num_threads = 8) : num_threads_(num_threads) {}
+  KVStore() = default;
   ~KVStore() = default;
 
   void set(const std::vector<Key>& keys, const at::Tensor& values);
 
-  at::Tensor get(const std::vector<Key>& keys) const;
+  std::vector<at::Tensor> get(const std::vector<Key>& keys);
 
   std::size_t memory_usage() const {
     // only count the memory usage of the map
@@ -25,8 +24,6 @@ class KVStore {
 
  private:
   absl::flat_hash_map<Key, at::Tensor> store_;
-  int num_threads_;
 };
-
 
 #endif  // KVSTORE_H

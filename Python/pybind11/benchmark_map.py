@@ -29,7 +29,7 @@ def benchmark_map(X: torch.Tensor):
     """
     m1 = get_memory_usage()
     start = time.time()
-    kv = KVStore(num_threads=8)
+    kv = KVStore()
     # in batches
     for i in range(0, len(X), args.ingestion_batch_size):
         keys = list(range(i, i+args.ingestion_batch_size))
@@ -40,14 +40,12 @@ def benchmark_map(X: torch.Tensor):
     # print('memory usage after insertion: {} MiB'.format(kv.memory_usage()/MiB))
     start = time.time()
     # in batches
-    out = []
     for i in range(0, len(X), args.lookup_batch_size):
         keys = list(range(i, i+args.lookup_batch_size))
-        out.append(kv.get(keys))
-    out = torch.cat(out)
+        torch.stack(kv.get(keys))
     end = time.time()
     lookup_time = end - start
-    return out.sum(), insertion_time, lookup_time, m2 - m1
+    return insertion_time, lookup_time, m2 - m1
 
 
 def benchmark_dict(X: torch.Tensor):
@@ -67,22 +65,20 @@ def benchmark_dict(X: torch.Tensor):
     m2 = get_memory_usage()
     start = time.time()
     # in batches
-    out = []
     for i in range(0, len(X), args.lookup_batch_size):
-        out.append(torch.stack([d[k]
-                   for k in range(i, i+args.lookup_batch_size)]))
-    out = torch.cat(out)
+        torch.stack([d[k]
+                     for k in range(i, i+args.lookup_batch_size)])
     end = time.time()
     lookup_time = end - start
-    return out.sum(), insertion_time, lookup_time, m2 - m1
+    return insertion_time, lookup_time, m2 - m1
 
 
 if __name__ == "__main__":
     X = torch.ones(args.N, 186, dtype=torch.bool)
     if args.type == 'map':
-        out, insertion_time, lookup_time, memory = benchmark_map(X)
+        insertion_time, lookup_time, memory = benchmark_map(X)
     elif args.type == 'dict':
-        out, insertion_time, lookup_time, memory = benchmark_dict(X)
+        insertion_time, lookup_time, memory = benchmark_dict(X)
     else:
         raise ValueError('type must be map or dict')
 
