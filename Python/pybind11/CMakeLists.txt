@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 add_subdirectory(third_party/pybind11)
-pybind11_add_module(kvstore "kvstore.cc")
+pybind11_add_module(kvstore kvstore.cc api.cc)
 
 add_subdirectory(third_party/abseil-cpp)
 
