@@ -1,4 +1,4 @@
-## Pybind11 Rlease GIL
+## Pybind11 Release GIL
 
 ```sh
 $ python test.py
